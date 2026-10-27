@@ -1,0 +1,225 @@
+-- Script Base de Datos SSMS / Proyecto Final
+-- Sistemas De Ventas / Programación V
+
+-- Crear la base de datos 
+CREATE DATABASE DB_SistemaVentas;
+
+-- Seleccionar la Base de Datos
+USE DB_SistemaVentas;
+
+-- Crear Tabla de Usuarios
+CREATE TABLE Usuarios
+(
+	IdUsuario INT IDENTITY(1,1) PRIMARY KEY,
+	NombreUsuario NVARCHAR(100) NOT NULL,
+	Apellido NVARCHAR(100) NOT NULL,
+	Usuario NVARCHAR(50) NOT NULL UNIQUE,
+	Correo NVARCHAR(150),
+	Contrasena NVARCHAR(100) NOT NULL,
+	Estado BIT NOT NULL DEFAULT 1,
+	FechaCreacion DATETIME NOT NULL DEFAULT GETDATE()
+);
+
+-- Crear Tabla de Roles
+CREATE TABLE Roles
+(
+	IdRol INT IDENTITY(1,1) PRIMARY KEY,
+	NombreRol NVARCHAR(50) NOT NULL,
+	Descripcion NVARCHAR(250),
+	Estado BIT NOT NULL DEFAULT 1
+);
+
+-- Crear la Tabla Rol de Usuario
+CREATE TABLE UsuarioRol
+(
+	IdUsuarioRol INT IDENTITY(1,1) PRIMARY KEY,
+	IdUsuario INT NOT NULL,
+	IdRol INT NOT NULL,
+
+	FOREIGN KEY (IdUsuario)
+		REFERENCES Usuarios(IdUsuario),
+
+	FOREIGN KEY (IdRol)
+		REFERENCES Roles(IdRol)
+);
+
+-- Crear tabla Clientes
+CREATE TABLE Clientes
+(
+	IdCliente INT IDENTITY(1,1) PRIMARY KEY,
+	Identificacion NVARCHAR(50),
+	NombreCompleto NVARCHAR(150) NOT NULL,
+	Telefono NVARCHAR(50),
+	Correo NVARCHAR(250),
+	Direccion NVARCHAR(250),
+	Estado BIT NOT NULL DEFAULT 1,
+	FechaRegistro DATETIME NOT NULL DEFAULT GETDATE()
+);
+
+-- Crear Tabla Categorías
+CREATE TABLE Categorias
+(
+	IdCategoria INT IDENTITY(1,1) PRIMARY KEY,
+	NombreCategoria NVARCHAR(100) NOT NULL,
+	Descripcion NVARCHAR(250),
+	Estado BIT NOT NULL DEFAULT 1
+);
+
+-- Crear Tabla de Productos
+CREATE TABLE Productos
+(
+	IdProducto INT IDENTITY(1,1) PRIMARY KEY,
+	CodigoProducto NVARCHAR(50) UNIQUE NOT NULL,
+	NombreProducto NVARCHAR(150) NOT NULL,
+	Descripcion NVARCHAR(250),
+	PrecioCompra DECIMAL(18,2) NOT NULL,
+	PrecioVenta DECIMAL(18,2) NOT NULL,
+	StockActual INT NOT NULL DEFAULT 0,
+	StockMinimo INT NOT NULL DEFAULT 0,
+	IdCategoria INT NOT NULL,
+	Estado BIT NOT NULL DEFAULT 1,
+	FechaRegistro DATETIME NOT NULL DEFAULT GETDATE(),
+
+	FOREIGN KEY(IdCategoria)
+		REFERENCES Categorias(IdCategoria)
+);
+
+-- Crear tabla Proveedores
+CREATE TABLE Proveedores
+(
+	IdProveedor INT IDENTITY(1,1) PRIMARY KEY,
+	NombreEmpresa NVARCHAR(150) NOT NULL,
+	NombreContacto NVARCHAR(150),
+	Telefono NVARCHAR(50),
+	Correo NVARCHAR(150),
+	Direccion NVARCHAR(250),
+	Estado BIT NOT NULL DEFAULT 1,
+);
+
+-- Crear Tabla Compras
+CREATE TABLE Compras
+(
+	IdCompra INT IDENTITY(1,1) PRIMARY KEY,
+	NumeroCompra NVARCHAR(300) UNIQUE NOT NULL,
+	FechaCompra DATETIME NOT NULL DEFAULT GETDATE(),
+	IdProveedor INT NOT NULL,
+	IdUsuario INT NOT NULL,
+	Subtotal DECIMAL(18,2) NOT NULL,
+	Impuesto DECIMAL(18,2) NOT NULL,
+	Total DECIMAL(18,2) NOT NULL,
+
+	FOREIGN KEY(IdProveedor)
+		REFERENCES Proveedores(IdProveedor),
+
+	FOREIGN KEY(IdUsuario)
+		REFERENCES Usuarios(IdUsuario)
+);
+
+-- Crear Tabla DetalleCompras
+CREATE TABLE DetalleCompras
+(
+	IdDetalleCompra INT IDENTITY(1,1) PRIMARY KEY,
+	IdCompra INT NOT NULL,
+	IdProducto INT NOT NULL,
+	Cantidad INT NOT NULL,
+	PrecioCompra DECIMAL(18,2) NOT NULL,
+	Subtotal DECIMAL(18,2) NOT NULL
+
+	FOREIGN KEY(IdCompra)
+		REFERENCES Compras(IdCompra),
+
+	FOREIGN KEY(IdProducto)
+		REFERENCES Productos(IdProducto)
+);
+
+
+-- Crear Tabla Ventas
+CREATE TABLE Ventas
+(
+	IdVenta INT IDENTITY(1,1) PRIMARY KEY,
+	NumeroVenta NVARCHAR(300) UNIQUE NOT NULL,
+	FechaVenta DATETIME NOT NULL DEFAULT GETDATE(),
+	IdCliente INT NOT NULL,
+	IdUsuario INT NOT NULL,
+	Subtotal DECIMAL(18,2) NOT NULL,
+	Descuento DECIMAL(18,2) DEFAULT 0,
+	Impuesto DECIMAL(18,2) NOT NULL,
+	Total DECIMAL(18,2) NOT NULL,
+
+	FOREIGN KEY(IdCliente)
+		REFERENCES Clientes(IdCliente),
+
+	FOREIGN KEY(IdUsuario)
+		REFERENCES Usuarios(IdUsuario)
+);
+
+-- Crear Tabla de DetalleVentas
+CREATE TABLE DetalleVentas
+(
+	IdDetalleVenta INT IDENTITY(1,1) PRIMARY KEY,
+	IdVenta INT NOT NULL,
+	IdProducto INT NOT NULL,
+	Cantidad INT NOT NULL,
+	PrecioUnitario DECIMAL(18,2) NOT NULL,
+	Subtotal DECIMAL(18,2) NOT NULL
+
+	FOREIGN KEY(IdVenta)
+		REFERENCES Ventas(IdVenta),
+
+	FOREIGN KEY(IdProducto)
+		REFERENCES Productos(IdProducto)
+);
+
+-- Crear Tabla Metodos de Pago
+CREATE TABLE MetodosPago
+(
+	IdMetodoPago INT IDENTITY(1,1) PRIMARY KEY,
+	Nombre NVARCHAR(100) NOT NULL,
+	Descripcion NVARCHAR(250),
+
+	Estado BIT NOT NULL DEFAULT 1
+);
+
+-- DATOS Iniciales de "MetodosPago"
+INSERT INTO MetodosPago (Nombre)
+VALUES
+('Efectivo'),
+('Tarjeta'),
+('Transferencia'),
+('SINPE');
+
+-- Crear Tabla de Pagos
+CREATE TABLE Pagos
+(
+	IdPago INT IDENTITY(1,1) PRIMARY KEY,
+	IdVenta INT NOT NULL,
+	IdMetodoPago INT NOT NULL,
+	Monto DECIMAL(18,2) NOT NULL,
+	FechaPago DATETIME DEFAULT GETDATE(),
+
+	FOREIGN KEY(IdVenta)
+		REFERENCES Ventas(IdVenta),
+
+	FOREIGN KEY(IdMetodoPago)
+		REFERENCES MetodosPago(IdMetodoPago)
+);
+
+-- Crear Tabla de Movimientos de inventario
+CREATE TABLE MovimientosInventario
+(
+	IdMovimiento INT IDENTITY(1,1) PRIMARY KEY,
+	IdProducto INT NOT NULL,
+	TipoMovimiento NVARCHAR(50) NOT NULL,
+	Cantidad INT NOT NULL,
+	FechaMovimiento DATETIME NOT NULL DEFAULT GETDATE(),
+	Referencia NVARCHAR(100),
+	Observacion NVARCHAR(250),
+	IdUsuario INT NOT NULL,
+
+	
+	FOREIGN KEY(IdProducto)
+		REFERENCES Productos(IdProducto),
+
+	FOREIGN KEY(IdUsuario)
+		REFERENCES Usuarios(IdUsuario)
+);
