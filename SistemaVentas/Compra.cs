@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SistemaVentas
 {
-    public class Compra : DocumentoComercial
+    public class Compra
     {
         public int IdCompra {  get; set; }
 
@@ -18,9 +18,10 @@ namespace SistemaVentas
 
         public decimal Subtotal { get; set; }
 
+        public decimal Impuesto { get; set; }
+
         public decimal Total { get; set; }
 
-        public List<DetalleCompra> Detalles { get; set; }
 
     }
 }

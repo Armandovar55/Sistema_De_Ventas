@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+/*
 namespace SistemaVentas
 {
     public class CompraService : ICalculable
     {
-        private readonly CompraRepository repository; /* Hace falta crear el CompraRepository*/
+        private readonly CompraRepository repository; Hace falta crear el CompraRepository
 
         public CompraService()
         {
@@ -19,3 +19,4 @@ namespace SistemaVentas
         }
     }
 }
+*/
